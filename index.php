@@ -15,6 +15,7 @@
 						<input type="radio" name="gender" value="f"> Female <br /><br />
 			
 			Zip Code: 	<input type="text" name="zip" id="zip"><br />
+						<span id="errorZip"></span><br />
 			City:		<span id="city"></span><br />
 			Latitude: 	<span id="latitude"></span><br />
 			Longitude: 	<span id="longitude"></span><br /><br />
@@ -38,10 +39,12 @@
 			
 			// Variables
 			var usernameAvailable = false;
+			var validZipCode = false;
 			
 			
-			// Populate states list upon page load
 			window.onload = function () {
+				
+				// Populate states list upon page load
 				$.ajax ({
 					method: "GET",
 					url: "https://cst336.herokuapp.com/projects/api/state_abbrAPI.php",
@@ -69,20 +72,32 @@
 
 					success: function(result,status) {
 						//alert(result.city);
-						$("#city").html(result.city);
-						$("#latitude").html(result.latitude);
-						$("#longitude").html(result.longitude);
+						
+						if (result.zip != null){
+							$("#errorZip").empty();
+							$("#city").html(result.city);
+							$("#latitude").html(result.latitude);
+							$("#longitude").html(result.longitude);
+							validZipCode = true;
+						}
+						else {
+							//alert("test invalid zip code");
+							$("#city").empty();
+							$("#latitude").empty();
+							$("#longitude").empty();
+							$("#errorZip").html("Invalid zip code.");
+							$("#errorZip").css("color", "red");
+							validZipCode = false;
+						}
 					}
 				}); // ajax
+				
 			}); // zip
 			
 			
 			// STATE
 			$("#state").on("change",function(){
 				//alert($("#state").val());
-				
-				// Clear county list upon state change
-				$("#county").empty();
 				
 				$.ajax({
 					method: "GET",
@@ -91,8 +106,7 @@
 					data: { "state" : $("#state").val() },
 
 					success: function(result,status) {
-						//alert(result[0].county);
-						
+						$("#county").html("<option> Select One </option>");
 						for (let i=0; i < result.length; i++){
 							$("#county").append("<option>" + result[i].county + "</option>");
 						}
@@ -146,6 +160,7 @@
 				
 				if ($("#username").val().length == 0) {
 					$("#usernameError").html("Username is required");
+					$("#usernameError").css("color", "red");
 					isValid = false;
 				}
 				
@@ -156,6 +171,11 @@
 				
 				if ($("#password").val().length < 6) {
 					$("#passwordAgainError").html("Your password must contain at least 6 characters.");
+					isValid = false;
+				}
+				
+				if (!validZipCode){
+					//alert("test");
 					isValid = false;
 				}
 				
